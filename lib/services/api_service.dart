@@ -10,14 +10,12 @@ class ApiService {
       var url = Uri.parse(AppConfig.apiUrl);
       var response = await _postRaw(url, body);
 
-      // Follow redirects manually up to 5 times (Google Apps Script redirects via 302/307/308)
-      int redirectCount = 0;
-      while ((response.statusCode == 302 || response.statusCode == 307 || response.statusCode == 308) && redirectCount < 5) {
+      // Google Apps Script redirects via 302. The redirected URL must be fetched using GET.
+      if (response.statusCode == 302 || response.statusCode == 307 || response.statusCode == 308) {
         final location = response.headers['location'];
-        if (location == null || location.isEmpty) break;
-        url = Uri.parse(location);
-        response = await _postRaw(url, body);
-        redirectCount++;
+        if (location != null && location.isNotEmpty) {
+          response = await http.get(Uri.parse(location)).timeout(const Duration(seconds: 30));
+        }
       }
 
       if (response.statusCode == 200) {
