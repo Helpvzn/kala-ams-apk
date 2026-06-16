@@ -1,0 +1,212 @@
+You are a senior Flutter developer and Google Apps Script developer. Build a complete cross-platform attendance management app for Android and iOS.
+
+PROJECT GOAL
+Create a simple, fast, free attendance system for up to 50 employees using:
+- Flutter for mobile app
+- Google Apps Script as backend API
+- Google Sheets as database
+- Google Drive for selfie storage
+
+DO NOT use Firebase, GPS, QR, WiFi, Bluetooth, NFC, face recognition, or any paid backend service.
+Keep the project simple, reliable, and easy to deploy.
+
+MAIN REQUIREMENTS
+
+1) Employee App
+Build a mobile app with these screens:
+
+A. Login Screen
+- Employee ID / Username
+- Password
+- Login button
+- Session should stay logged in until logout
+
+B. Employee Dashboard
+- Employee name
+- Employee ID
+- Today status:
+  - Not Checked In
+  - Checked In
+  - Checked Out
+- Buttons:
+  - Check In
+  - Check Out
+  - Attendance History
+  - Logout
+
+C. Check In / Check Out Flow
+- When user taps Check In or Check Out, open ONLY the live front camera
+- Do NOT allow gallery upload
+- Do NOT allow selecting old photos
+- Only live selfie capture should be allowed
+- Add retake option before submit
+- After capture, upload selfie to Google Drive
+- Save attendance record in Google Sheet with server time from Apps Script, not phone time
+- Show success or error message clearly
+
+D. Attendance History
+Employee should be able to see:
+- Date
+- Check In Time
+- Check Out Time
+- Working Hours
+- Selfie preview links if available
+- Filter by Today / This Month / Custom Date Range
+
+2) Admin Panel
+Create an admin panel inside the same app or as a separate admin screen.
+
+Admin features:
+- Admin login
+- Dashboard with:
+  - Total Employees
+  - Present Today
+  - Absent Today
+  - Checked In
+  - Checked Out
+- Employee management:
+  - Add employee
+  - Edit employee
+  - Remove employee
+  - Activate / deactivate employee
+  - Reset password
+- Attendance management:
+  - View all attendance records
+  - Search by employee name, employee ID, or mobile number
+  - View check-in selfie
+  - View check-out selfie
+- Reports:
+  - Monthly attendance
+  - Export CSV
+  - Export sheet-compatible report
+
+3) Google Sheets Structure
+Use Google Sheets as the main database.
+
+Create these sheets:
+
+Sheet 1: Employee_Master
+Columns:
+- EmpID
+- Name
+- Mobile
+- Department
+- Designation
+- Password
+- Status
+- CreatedAt
+
+Sheet 2: Attendance
+Columns:
+- AttendanceID
+- EmpID
+- Name
+- Date
+- CheckInTime
+- CheckOutTime
+- WorkingHours
+- CheckInPhotoURL
+- CheckOutPhotoURL
+- Status
+- UpdatedAt
+
+Sheet 3: Admin
+Columns:
+- Username
+- Password
+- Role
+- Status
+
+4) Google Drive Structure
+Store selfies in Google Drive in a clean folder structure:
+- Attendance_Photos
+  - 2026
+    - 06
+      - Employee001
+      - Employee002
+
+Each uploaded image should return a shareable file URL and save that URL in the attendance sheet.
+
+5) Backend Requirements
+Use Google Apps Script as the backend API.
+
+Create APIs/functions for:
+- Admin login
+- Employee login
+- Get employee profile
+- Add employee
+- Update employee
+- Delete employee
+- Activate/deactivate employee
+- Check in
+- Check out
+- Fetch attendance history
+- Fetch dashboard counts
+- Upload selfie to Drive
+- Export report data
+
+Important backend rules:
+- Use server-side time only with Apps Script date/time
+- Phone time must not be trusted
+- One employee should be allowed only one check-in per day
+- One employee should be allowed only one check-out per day
+- Check-out should only work after check-in
+- If employee is inactive, block login and attendance actions
+
+6) Security / Validation Rules
+- Gallery upload must be completely disabled
+- Only camera capture allowed
+- Front camera should open by default
+- If the app cannot access camera, show a proper error message
+- Validate employee ID and password before login
+- Validate admin credentials separately
+- Prevent duplicate attendance entries
+- Use simple token/session handling for logged-in users
+- Protect API endpoints from obvious misuse as much as possible in a simple free setup
+
+7) UI / UX
+- Clean, simple, modern UI
+- Easy for non-technical users
+- Minimal steps for check-in and check-out
+- Friendly labels
+- Good loading states
+- Proper success and error messages
+- Mobile-first design
+- Make it look professional but not complicated
+
+8) Tech Stack
+Use:
+- Flutter
+- Dart
+- Google Apps Script
+- Google Sheets
+- Google Drive
+
+9) Deliverables
+Generate the complete project with:
+- Full Flutter app source code
+- Google Apps Script code
+- Google Sheet setup instructions
+- Folder structure
+- API endpoints
+- Step-by-step deployment guide
+- Any required permissions and configuration steps
+- Sample test data
+- Clear instructions for running the app on Android and iOS
+
+10) Coding Expectations
+- Write clean, organized, production-ready code
+- Use separate files for screens, models, services, and utilities
+- Add comments where needed
+- Handle errors properly
+- Keep the code easy to modify later
+- Make sure the app works end-to-end with Google Sheets and Google Drive
+
+11) Important Constraints
+- This is for around 50 employees only
+- Keep it free or nearly free
+- Keep the backend simple
+- Do not over-engineer the solution
+- Focus on practical working functionality first
+
+Now generate the full application step by step, including the Flutter frontend, Google Apps Script backend, and the Google Sheet schema.
