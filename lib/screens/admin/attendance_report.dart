@@ -22,12 +22,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     super.initState();
     _fetch();
   }
-
-  String _todayStr() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-  }
-
   Future<void> _fetch({String? date, String? empId}) async {
     setState(() => _loading = true);
     final res = await ApiService.getAllAttendance(
@@ -444,13 +438,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                   status: status,
                 );
                 setState(() => _loading = false);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(res['message'] ?? 'Done'),
-                    backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
-                    behavior: SnackBarBehavior.floating,
-                  ));
-                }
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(res['message'] ?? 'Done'),
+                  backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ));
                 _fetch();
               },
               child: const Text('Save'),
@@ -480,13 +473,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
               setState(() => _loading = true);
               final res = await ApiService.deleteAttendance(a.attId);
               setState(() => _loading = false);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(res['message'] ?? 'Done'),
-                  backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ));
-              }
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(res['message'] ?? 'Done'),
+                backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ));
               _fetch();
             },
             child: const Text('Delete'),

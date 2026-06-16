@@ -18,7 +18,6 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
   AttendanceModel? _todayRecord;
   bool _loading = true;
   bool _actionLoading = false;
-  String _fetchError = ''; // to debug API issues
 
   @override
   void initState() {
@@ -43,19 +42,14 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
         final records = res['records'] as List;
         if (records.isNotEmpty) {
           _todayRecord = AttendanceModel.fromJson(records.first);
-          _fetchError = '';
         } else {
           // Empty = genuinely no check-in today
           _todayRecord = null;
-          _fetchError = '';
         }
-      } else {
-        // API returned error — preserve last known state, show error
-        _fetchError = res['message']?.toString() ?? 'API error';
       }
+      // On API error: silently preserve last known state
     } catch (e) {
       // Network error — preserve last known state
-      _fetchError = e.toString();
     }
   }
 
