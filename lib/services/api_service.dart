@@ -7,12 +7,18 @@ class ApiService {
     try {
       body['key'] = AppConfig.apiKey;
 
-      // Use text/plain to avoid CORS preflight (Google Apps Script doesn't handle OPTIONS)
-      final response = await http.post(
-        Uri.parse(AppConfig.apiUrl),
-        headers: {'Content-Type': 'text/plain'},
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 30));
+      var url = Uri.parse(AppConfig.apiUrl);
+      var response = await _postRaw(url, body);
+
+      // Follow redirects manually up to 5 times (Google Apps Script redirects via 302/307/308)
+      int redirectCount = 0;
+      while ((response.statusCode == 302 || response.statusCode == 307 || response.statusCode == 308) && redirectCount < 5) {
+        final location = response.headers['location'];
+        if (location == null || location.isEmpty) break;
+        url = Uri.parse(location);
+        response = await _postRaw(url, body);
+        redirectCount++;
+      }
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -26,6 +32,15 @@ class ApiService {
     } catch (e) {
       return {'status': 'error', 'message': 'Connection failed. Check internet.\n${e.toString()}'};
     }
+  }
+
+  static Future<http.Response> _postRaw(Uri url, Map<String, dynamic> body) async {
+    final request = http.Request('POST', url)
+      ..headers['Content-Type'] = 'text/plain'
+      ..body = jsonEncode(body)
+      ..followRedirects = false; // Handle redirects manually
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+    return await http.Response.fromStream(streamedResponse);
   }
 
   // ---- AUTH ----
@@ -109,5 +124,31 @@ class ApiService {
 
   static Future<Map<String, dynamic>> exportReport(String month) {
     return _post({'action': 'exportReport', 'month': month});
+  }
+
+  static Future<Map<String, dynamic>> updateAttendance(
+    String attId, {
+    String? date,
+    String? checkInTime,
+    String? checkOutTime,
+    String? workingHours,
+    String? status,
+  }) {
+    return _post({
+      'action': 'updateAttendance',
+      'attId': attId,
+      if (date != null) 'date': date,
+      if (checkInTime != null) 'checkInTime': checkInTime,
+      if (checkOutTime != null) 'checkOutTime': checkOutTime,
+      if (workingHours != null) 'workingHours': workingHours,
+      if (status != null) 'status': status,
+    });
+  }
+
+  static Future<Map<String, dynamic>> deleteAttendance(String attId) {
+    return _post({
+      'action': 'deleteAttendance',
+      'attId': attId,
+    });
   }
 }

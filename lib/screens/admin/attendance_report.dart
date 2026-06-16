@@ -294,6 +294,31 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     const SizedBox(height: 6),
                     _photo(a.checkOutPhotoUrl),
                   ],
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => _editRecord(a),
+                        icon: const Icon(Icons.edit, size: 14, color: Colors.blue),
+                        label: const Text('Edit', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.blue),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton.icon(
+                        onPressed: () => _deleteRecordConfirm(a),
+                        icon: const Icon(Icons.delete, size: 14, color: Colors.red),
+                        label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -332,6 +357,141 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
           color: Colors.white12,
           child: const Icon(Icons.broken_image, color: Colors.white24),
         ),
+      ),
+    );
+  }
+
+  void _editRecord(AttendanceModel a) {
+    final checkInCtrl = TextEditingController(text: a.checkInTime);
+    final checkOutCtrl = TextEditingController(text: a.checkOutTime);
+    final dateCtrl = TextEditingController(text: a.date);
+    String status = a.status;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1A2E),
+          title: const Text('Edit Attendance Record', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: dateCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Date (yyyy-MM-dd)',
+                    labelStyle: TextStyle(color: Colors.white60),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: checkInCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Check In Time (yyyy-MM-dd HH:mm:ss)',
+                    labelStyle: TextStyle(color: Colors.white60),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: checkOutCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Check Out Time (yyyy-MM-dd HH:mm:ss)',
+                    labelStyle: TextStyle(color: Colors.white60),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Text('Status: ', style: TextStyle(color: Colors.white70)),
+                    const SizedBox(width: 12),
+                    DropdownButton<String>(
+                      dropdownColor: const Color(0xFF1A1A2E),
+                      value: status,
+                      style: const TextStyle(color: Colors.white),
+                      items: const [
+                        DropdownMenuItem(value: 'Checked In', child: Text('Checked In')),
+                        DropdownMenuItem(value: 'Checked Out', child: Text('Checked Out')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => status = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                setState(() => _loading = true);
+                final res = await ApiService.updateAttendance(
+                  a.attId,
+                  date: dateCtrl.text.trim(),
+                  checkInTime: checkInCtrl.text.trim(),
+                  checkOutTime: checkOutCtrl.text.trim(),
+                  status: status,
+                );
+                setState(() => _loading = false);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(res['message'] ?? 'Done'),
+                    backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ));
+                }
+                _fetch();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _deleteRecordConfirm(AttendanceModel a) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: const Text('Delete Attendance', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete the attendance record of ${a.name} for ${a.date}?', style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() => _loading = true);
+              final res = await ApiService.deleteAttendance(a.attId);
+              setState(() => _loading = false);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(res['message'] ?? 'Done'),
+                  backgroundColor: res['status'] == 'success' ? Colors.green : Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ));
+              }
+              _fetch();
+            },
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }

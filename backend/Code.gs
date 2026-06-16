@@ -46,6 +46,8 @@ function doPost(e) {
       case 'getAllAttendance':  return jsonResponse(getAllAttendance(data));
       case 'getHistory':       return jsonResponse(getHistory(data));
       case 'exportReport':     return jsonResponse(exportReport(data));
+      case 'updateAttendance': return jsonResponse(updateAttendance(data));
+      case 'deleteAttendance': return jsonResponse(deleteAttendance(data));
       default:
         return jsonResponse({ status: 'error', message: 'Unknown action' });
     }
@@ -657,4 +659,61 @@ function setupSheets() {
   }
 
   Logger.log('Setup complete!');
+}
+
+// =============================================================
+// ADMIN: Update Attendance Record
+// =============================================================
+function updateAttendance(data) {
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === data.attId) {
+      const rowNum = i + 1;
+      
+      let cIn = data.checkInTime !== undefined ? data.checkInTime : String(rows[i][4]).trim();
+      let cOut = data.checkOutTime !== undefined ? data.checkOutTime : String(rows[i][5]).trim();
+      
+      let workingHours = '';
+      if (cIn && cOut && cIn !== '' && cOut !== '') {
+        try {
+          const checkInDate = parseDateTime(cIn);
+          const checkOutDate = parseDateTime(cOut);
+          if (checkInDate && checkOutDate) {
+            const diffMs = checkOutDate.getTime() - checkInDate.getTime();
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            workingHours = `${hours}h ${minutes}m`;
+          }
+        } catch(e) {}
+      }
+
+      if (data.date) sheet.getRange(rowNum, 4).setValue(data.date);
+      if (data.checkInTime !== undefined) sheet.getRange(rowNum, 5).setValue(data.checkInTime);
+      if (data.checkOutTime !== undefined) sheet.getRange(rowNum, 6).setValue(data.checkOutTime);
+      sheet.getRange(rowNum, 7).setValue(workingHours); // Automatically calculated
+      if (data.status) sheet.getRange(rowNum, 10).setValue(data.status);
+      sheet.getRange(rowNum, 11).setValue(getServerTime()); // UpdatedAt
+
+      return { status: 'success', message: 'Attendance record updated successfully', workingHours: workingHours };
+    }
+  }
+  return { status: 'error', message: 'Attendance record not found' };
+}
+
+// =============================================================
+// ADMIN: Delete Attendance Record
+// =============================================================
+function deleteAttendance(data) {
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === data.attId) {
+      sheet.deleteRow(i + 1);
+      return { status: 'success', message: 'Attendance record deleted successfully' };
+    }
+  }
+  return { status: 'error', message: 'Attendance record not found' };
 }
