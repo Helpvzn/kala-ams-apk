@@ -235,21 +235,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text('💰', style: TextStyle(fontSize: 18)),
                       SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Live Precious Metals Dashboard',
-                            style: TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14),
-                          ),
-                          Text(
-                            'Gold, Silver, Platinum rates — No login needed',
-                            style: TextStyle(color: Colors.white38, fontSize: 11),
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Live Precious Metals Dashboard',
+                              style: TextStyle(
+                                  color: Color(0xFFD4AF37),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Gold, Silver, Platinum rates — No login needed',
+                              style: TextStyle(color: Colors.white38, fontSize: 11),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(width: 10),
                       Icon(Icons.arrow_forward_ios_rounded,

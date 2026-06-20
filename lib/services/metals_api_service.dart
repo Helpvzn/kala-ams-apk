@@ -5,9 +5,6 @@ import 'package:http/http.dart' as http;
 /// from metals.live (no API key required) and converts to INR.
 /// Exchange rate is fetched from open.er-api.com (free, no key needed).
 class MetalsApiService {
-  // Free metals spot price API - no auth required
-  static const _metalsUrl = 'https://api.metals.live/v1/spot';
-
   // Free exchange rate API - no auth required
   static const _fxUrl = 'https://open.er-api.com/v6/latest/USD';
 
@@ -90,34 +87,30 @@ class MetalsApiService {
   }
 
   static Future<Map<String, double>> _fetchMetals() async {
-    final response = await http
-        .get(Uri.parse(_metalsUrl))
-        .timeout(const Duration(seconds: 15));
+    // Yahoo Finance API symbols for precious metals
+    final symbols = ['GC=F', 'SI=F', 'PL=F', 'PA=F'];
+    final urls = symbols.map((s) => 'https://query1.finance.yahoo.com/v8/finance/chart/$s').toList();
 
-    if (response.statusCode != 200) throw Exception('Metals API error');
+    final results = await Future.wait(urls.map((url) => 
+        http.get(Uri.parse(url)).timeout(const Duration(seconds: 15))
+    ));
 
-    final data = jsonDecode(response.body);
     final Map<String, double> result = {};
-
-    if (data is List) {
-      // metals.live returns a list of {gold: X, silver: Y, ...} objects
-      // We merge all into one map
-      for (final item in data) {
-        if (item is Map) {
-          for (final entry in item.entries) {
-            final val = (entry.value as num?)?.toDouble();
-            if (val != null) result[entry.key.toString().toLowerCase()] = val;
-          }
-        }
-      }
-    } else if (data is Map) {
-      for (final entry in data.entries) {
-        final val = (entry.value as num?)?.toDouble();
-        if (val != null) result[entry.key.toString().toLowerCase()] = val;
-      }
+    for (int i = 0; i < symbols.length; i++) {
+       final response = results[i];
+       if (response.statusCode == 200) {
+         final data = jsonDecode(response.body);
+         final price = (data['chart']?['result']?[0]?['meta']?['regularMarketPrice'] as num?)?.toDouble();
+         if (price != null) {
+            if (symbols[i] == 'GC=F') result['gold'] = price;
+            if (symbols[i] == 'SI=F') result['silver'] = price;
+            if (symbols[i] == 'PL=F') result['platinum'] = price;
+            if (symbols[i] == 'PA=F') result['palladium'] = price;
+         }
+       }
     }
 
-    if (result.isEmpty) throw Exception('No metals data');
+    if (result.isEmpty) throw Exception('No metals data found from Yahoo Finance');
     return result;
   }
 
