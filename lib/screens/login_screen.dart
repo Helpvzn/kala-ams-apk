@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../services/session_service.dart';
 import 'employee/employee_dashboard.dart';
 import 'admin/admin_dashboard.dart';
+import 'metals_dashboard/live_metals_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -209,7 +210,55 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+
+              // ─── Live Market Prices button (no login needed) ───
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LiveMetalsDashboardScreen()),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1A1500), Color(0xFF2A2100)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFD4AF37).withAlpha(120)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('💰', style: TextStyle(fontSize: 18)),
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Live Precious Metals Dashboard',
+                            style: TextStyle(
+                                color: Color(0xFFD4AF37),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14),
+                          ),
+                          Text(
+                            'Gold, Silver, Platinum rates — No login needed',
+                            style: TextStyle(color: Colors.white38, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 10),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          color: Color(0xFF9E7C00), size: 14),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               const Text(
                 '© 2026 Kala A.M.S — All Rights Reserved',
                 style: TextStyle(color: Colors.white24, fontSize: 11),
